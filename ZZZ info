@@ -1,0 +1,23 @@
+1- cuando se aprieta el boton del cliente se muestra por consola del servidor el hello, server!
+2- añadir el esquema inferior, get keys, post msg encrypted,....
+3- creo que las llaves llegan con valores diferentes pq el servidor transforma los valores a hex
+
+esquema:
+app.js es el punto de entrada del servidor
+
+|Cliente|       -----------------Get/Keys-------------->    |Server|
+                <----------------Send/Keys--------------    
+              aqui el cliente pude encriptar con las llaves       
+                -----------------Post/Epubs(msg)------->El server recibe un msg encriptado con su publica que puede desencriptar con su privada
+                -----------------Post/Eprivc(msg)------>El server recibe un msg encriptado con la privada del cliente que puede desencriptar con la publica del cliente   
+                -----------Post/Sprivc[Epubs(msg)]----->El server recibe un msg Firmado con la privada del cliente, con un msg que encriptado con la publica del server
+
+####################################################
+shift+ctrl+p 
+
+
+
+Ayudas:
+teoria modular https://anton.laservila.com/Uni/SCCBD/2021-03-08%2017-05-17.mp4
+ejemplo del modulo RSA https://anton.laservila.com/Uni/SCCBD/2021-03-22%2017-04-13.mp4
+angular tuto https://angular.io/tutorial/first-app/first-app-lesson-01
