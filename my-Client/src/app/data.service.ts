@@ -19,8 +19,26 @@ export class DataService {
   sendPublicKey(message: string){
     return this.http.post(`${this.baseUrl}/pubkey`, { message });
   }
+  recibirLlavePublicaServidor(): Observable<any>{
+    return this.http.get<any>(`${this.baseUrl}/getServerPublicKey`);
+  }
   sendPrivateKey(message: string){
     return this.http.post(`${this.baseUrl}/privkey`, { message });
+  }
+  recibirLlavePrivadaServidor(): Observable<any>{
+    return this.http.get<any>(`${this.baseUrl}/getServerPrivateKey`);
+  }
+  enviarMensajeEncriptado(message: string) {
+    return this.http.post(`${this.baseUrl}/encriptao`, { message });
+  }
+  recibirMensajeEncriptado():Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/encriptao`);
+  }
+  enviarMensajeFirmado(message: string) {
+    return this.http.post(`${this.baseUrl}/firma`, { message });
+  }
+  recibirMensajeFirmado():Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/firma`);
   }
 
 

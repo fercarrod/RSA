@@ -34,7 +34,7 @@ export class RsaPrivKey {
   }
 
   dencrypt (c: bigint): bigint {
-    return bcu.modPow(c, this.d, this.n)
+    return bcu.modPow(c,this.d, this.n)
   }
 
   sign (m: bigint): bigint {

@@ -363,26 +363,37 @@
   <div *ngIf="receivedMessage">
     Received Message: {{ receivedMessage }}
   </div>
-  <h2>Prueba Recibir llaves</h2>
+  .
+  Prueba Recibir llaves
   <button (click)="generateKeys()">Generar Claves</button>
   .
-  <button (click)="enviarLlavePublica()">Enviar llave pública</button>
-  <button (click)="enviarLlavePrivada()">Enviar llave privada</button>
-  .enviarLlavePrivada
-  <input type="text" [(ngModel)]="mensaje">
-  .
-  <button (click)="almacenarMensaje()">Guardar</button>
- .
   <div>
-  Public Key functions
-  <button (click)="encriptar()">Encriptar</button>
-  <button (click)="enviarMensajeEncriptado()">Enviar mensaje encriptado</button>
-  <button (click)="verificar()">Verificar</button>
+  <button (click)="recibirLlavePublicaServidor()">Obtener Llave Publica Servidor</button> .
+  <button (click)="recibirLlavePrivadaServidor()">Obtener Llave privada Servidor</button>
   </div>
   <div>
+  <button (click)="enviarLlavePublica()">Enviar llave pública</button> .
+  <button (click)="enviarLlavePrivada()">Enviar llave privada</button>
+  </div>
+.
+  <div>
+  Introduze el Texto que quieras encriptar o frimar
+  <input type="text" [(ngModel)]="mensaje">
+  </div>
+
+
+  Public Key functions
+  <div>
+  <button (click)="enviarMensajeEncriptado()">Enviar Encritado</button>
+  <button (click)="recibirMensajeEncriptado()">Recibir Encritado</button>
+   . <button (click)="verificar()">Verificar</button>
+  </div>
+
     Private Key functions
+    <div>
+    <button (click)="enviarMensajeFirmado()">Firmar</button> .
     <button (click)="desencriptar()">Desencriptar</button>
-    <button (click)="firmar()">Firmar</button>
+
     </div>
 
 

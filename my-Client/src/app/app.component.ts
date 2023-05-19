@@ -17,6 +17,7 @@ export class AppComponent {
   receivedMessage: string='';
   messagetoEncrypt: string = '';
   mensaje: string= '';
+
   constructor(private dataService: DataService) { }
 
   almacenarMensaje() {
@@ -52,7 +53,7 @@ export class AppComponent {
   }
 
   generateKeys() {
-    generateKeys(512).then((keys: RsaKeyPair) => {
+    generateKeys(2048).then((keys: RsaKeyPair) => {
       console.log('Claves generadas:', keys);
 
       const publicKey = {
@@ -95,7 +96,19 @@ export class AppComponent {
       }
     );
   }
-
+  recibirLlavePublicaServidor() {
+    this.dataService.recibirLlavePublicaServidor().subscribe(
+      response => {
+        console.log('Llave publica Servidor Recibida:', response);
+        this.receivedMessage = response.message;
+        localStorage.setItem('publicKeyServer',this.receivedMessage)
+      },
+      error => {
+        console.error('Failed to get message:', error);
+        // Handle error...
+      }
+    );
+  }
   enviarLlavePrivada() {
     // Recuperar la llave pública del localStorage
     const llavePublicaJsonString = localStorage.getItem('privateKey');
@@ -116,16 +129,69 @@ export class AppComponent {
       }
     );
   }
+  recibirLlavePrivadaServidor() {
+    this.dataService.recibirLlavePrivadaServidor().subscribe(
+      response => {
+        console.log('Llave privada Servidor Recibida:', response);
+        const { d, n } = response.privKey;
+       // Guardar los valores de d y n en el localStorage
+       localStorage.setItem('privateKeyD', d);
+       localStorage.setItem('privateKeyN', n);
+       console.log('Valores de d y n guardados en el cliente:',d, n);
+       },
+      error => {
+        console.error('Failed to get message:', error);
+        // Handle error...
+      }
+    );
+  }
 
   desencriptar(){
     console.log('dese onclcik')
   }
 
-  firmar(){
-    console.log('firma onclcik')
-  }
+  enviarMensajeFirmado(){
+    // Recuperar el mensaje almacenado
+  const mensaje = this.mensaje;
 
-  encriptar() {
+  // Recuperar la llave pública desde localStorage
+  const privateKeyJson = localStorage.getItem('privateKey');
+
+  if (privateKeyJson === null) {
+    // La llave pública no está almacenada en localStorage
+    console.error('No se encontró la llave pública en localStorage.');
+    return;
+  }
+  const privateKey = JSON.parse(privateKeyJson);
+  // Obtener los valores de 'd' y 'n' del objeto privateKey
+  const d = privateKey.d;
+  const n = privateKey.n;
+  // Crear una instancia de RsaPubKey utilizando 'e' y 'n'
+  const rsaPrivKey = new RsaPrivKey(BigInt(d), BigInt(n));
+  // Encriptar el mensaje utilizando la instancia de RsaPubKey y el bigintcoversion para poder encriptar textos, convertir text to bigint, sino solo se puede encriptar números
+  console.log('el mensaje a firmar es: ', mensaje)
+  const mensajeFirmado = rsaPrivKey.sign(bigintconversion.textToBigint(mensaje));
+  console.log('este es el mensajeEncriptado: ', mensajeFirmado)
+    // Crear el objeto JSON con el mensaje encriptado
+    const mensajeFirmadoJson = {
+      mensajeFirmado: mensajeFirmado.toString()
+    };
+    // Convertir el objeto JSON a cadena
+    const mensajeEncriptadoJsonString = JSON.stringify(mensajeFirmadoJson);
+    if (mensajeEncriptadoJsonString === null) {
+      console.error('No se encontró el mensaje encriptado en localStorage.');
+      return;
+    }
+    this.dataService.enviarMensajeEncriptado(mensajeEncriptadoJsonString).subscribe(
+      response => {
+        console.log('Mensaje encriptado enviado al servidor:', response);
+      },
+      error => {
+        console.error('Error al enviar el mensaje encriptado:', error);
+      }
+    )
+  }
+  enviarMensajeEncriptado() {
   // Recuperar el mensaje almacenado
   const mensaje = this.mensaje;
 
@@ -147,42 +213,59 @@ export class AppComponent {
   const rsaPubKey = new RsaPubKey(BigInt(e), BigInt(n));
 
   // Encriptar el mensaje utilizando la instancia de RsaPubKey y el bigintcoversion para poder encriptar textos, convertir text to bigint, sino solo se puede encriptar números
+  console.log('el mensaje a encriptar es: ', mensaje)
   const mensajeEncriptado = rsaPubKey.encrypt(bigintconversion.textToBigint(mensaje));
   console.log('este es el mensajeEncriptado: ', mensajeEncriptado)
     // Crear el objeto JSON con el mensaje encriptado
     const mensajeEncriptadoJson = {
       mensajeEncriptado: mensajeEncriptado.toString()
     };
-
     // Convertir el objeto JSON a cadena
     const mensajeEncriptadoJsonString = JSON.stringify(mensajeEncriptadoJson);
-
-    // Guardar el mensaje encriptado en localStorage
-    localStorage.setItem('mensajeEncriptado', mensajeEncriptadoJsonString);
-    console.log('el json mensajeEncriptadoJsonString: ', mensajeEncriptadoJsonString)
-  }
-  enviarMensajeEncriptado() {
-    // Recuperar el mensaje encriptado del localStorage
-    const mensajeEncriptadoJsonString = localStorage.getItem('mensajeEncriptado');
-
     if (mensajeEncriptadoJsonString === null) {
       console.error('No se encontró el mensaje encriptado en localStorage.');
       return;
     }
-
-    // Enviar el mensaje encriptado al servidor utilizando el servicio DataService
-    this.dataService.sendMessage(mensajeEncriptadoJsonString).subscribe(
+    this.dataService.enviarMensajeEncriptado(mensajeEncriptadoJsonString).subscribe(
       response => {
         console.log('Mensaje encriptado enviado al servidor:', response);
-        // Realizar acciones adicionales después de enviar el mensaje encriptado
       },
       error => {
         console.error('Error al enviar el mensaje encriptado:', error);
       }
+    )
+  }
+  recibirMensajeEncriptado() {// desencripta mal salen cosas raras
+    this.dataService.recibirMensajeEncriptado().subscribe(
+      response => {
+        console.log('El mensaje recibido es:', response);
+        const messageEncryptedbyServer = response
+        console.log('El mensaje recibido es:', messageEncryptedbyServer);
+        // Recuperar la llave privada desde localStorage
+        const d = localStorage.getItem('privateKeyD');
+        console.log('d: ', d)
+        const n = localStorage.getItem('privateKeyN');
+        console.log('n: ', n)
+
+        if (d === null || n === null ) {
+         // La llave pública no está almacenada en localStorage
+        console.error('No se encontró la llave pública en localStorage.');
+        return;
+        }
+        // Crear una instancia de RsaPubKey utilizando 'e' y 'n'
+        const rsaPrivKey = new RsaPrivKey(BigInt(d), BigInt(n));
+        console.log('rsaPrivKey:', rsaPrivKey)
+        const messagedecrypted = rsaPrivKey.decrypt(bigintconversion.textToBigint(messageEncryptedbyServer))
+        console.log('messagedecrypted:',messagedecrypted)
+        const messagedecryptedtoText = bigintconversion.bigintToText(messagedecrypted)
+        console.log('messagedecryptedtoText:',messagedecryptedtoText)
+        },
+        error => {
+        console.error('Failed to get message:', error);
+        // Handle error...
+        }
     );
   }
-
-
   verificar(){
     console.log('verificar onclcik')
   }

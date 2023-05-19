@@ -1,23 +1,42 @@
-1- cuando se aprieta el boton del cliente se muestra por consola del servidor el hello, server!
-2- añadir el esquema inferior, get keys, post msg encrypted,....
-3- creo que las llaves llegan con valores diferentes pq el servidor transforma los valores a hex
-
 esquema:
-app.js es el punto de entrada del servidor
+almacenarMensaje() {
+    console.log('Mensaje almacenado:', this.mensaje);
+  }
 
-|Cliente|       -----------------Get/Keys-------------->    |Server|
-                <----------------Send/Keys--------------    
-              aqui el cliente pude encriptar con las llaves       
-                -----------------Post/Epubs(msg)------->El server recibe un msg encriptado con su publica que puede desencriptar con su privada
-                -----------------Post/Eprivc(msg)------>El server recibe un msg encriptado con la privada del cliente que puede desencriptar con la publica del cliente   
-                -----------Post/Sprivc[Epubs(msg)]----->El server recibe un msg Firmado con la privada del cliente, con un msg que encriptado con la publica del server
+  sendMessage()  {//función para comprobar la conexión Cliente servidor, el cliente  envia al Servidor el mensaje: 'Que pasa cabesa! }
+  getMessage() {//función para comprobar la conexión Cliente servidor, el cliente recibe del Servidor el mensaje:'Hello from the server!'}
+
+  generateKeys() { // genera la llave publica y privada del cliente, las guarda por separado en el localstorage del navegador para poder usarlas fuera de la función
+                   // las guarda con los nombres 'publicKey' y 'privateKey }
+  
+  // separo los envios, para poder controlar quien tiene la privada de cada uno
+  enviarLlavePublica() {// función que envia las llave Publica al Servidor para que pueda verificar los menajes firmados por el cliente
+                        // recupera la llave del localStorage.getItem('publicKey')
+                        // envia un json} 
+  enviarLlavePrivada() {// lo mismo que con la función de arriba pero envia la privada del cliente}
+  recibirLlavePrivadaServidor() {// función para recibir la llave Privada del servidor para poder desencriptar los mensajes encriptados con la publica del Servidor }
+  recibirLlavePublicaServidor() {// lo mismo}
+
+  desencriptar(){// función que recibe un json del servidor con un mensaje encriptado con la EpublicKeyServer(msg) y desencripta usando la privada del Servidor }
+  firmar(){// función para firmar con la llave privada del cliente}
+
+  encriptar() {//función que pilla el texto introducido en el input textbox y encripta el texto usando la llave publica del cliente EpublicKeyCliente(msg)
+               //el server tiene que usar la privada del cliente para desencriptar 
+  }
+  recibirMensajeEncriptado() {// desencripta mal salen cosas raras}
+  verificar(){//función que recibe un paquete firmado por el Servidor, lo desencripta usando la llave publica del Servidor 
+  }
+
+
+  enviarMensajeEncriptado() {//añadir esta al codigo de encriptar directamente
+  }
+
+}
+
+
 
 ####################################################
 shift+ctrl+p 
 
 
 
-Ayudas:
-teoria modular https://anton.laservila.com/Uni/SCCBD/2021-03-08%2017-05-17.mp4
-ejemplo del modulo RSA https://anton.laservila.com/Uni/SCCBD/2021-03-22%2017-04-13.mp4
-angular tuto https://angular.io/tutorial/first-app/first-app-lesson-01
