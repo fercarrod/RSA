@@ -189,10 +189,15 @@ export class AppComponent {
 
 
 
+
+
+
+
   // Funciones donde el Cliente envia el mensaje al Servidor
   //                                             Firmado con la     llave privada del Cliente ---> Servidor verifica con la     llave pública del Cliente
   //                                             Encriptado con la  llave pública al Servidor ---> Servidor desencripta con la  llave privada del Cliente
   //
+  //## Falta arreglar estas 2 de aqui
   enviarMensajeFirmado(){
     // Recuperar el mensaje almacenado
   const mensaje = this.mensaje;
