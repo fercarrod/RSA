@@ -53,7 +53,7 @@ export class AppComponent {
   }
 
   generateKeys() {
-    generateKeys(2048).then((keys: RsaKeyPair) => {
+    generateKeys(1024).then((keys: RsaKeyPair) => {
       console.log('Claves generadas:', keys);
 
       const publicKey = {
@@ -167,7 +167,7 @@ export class AppComponent {
   const d = privateKey.d;
   const n = privateKey.n;
   // Crear una instancia de RsaPubKey utilizando 'e' y 'n'
-  const rsaPrivKey = new RsaPrivKey(BigInt(d), BigInt(n));
+  const rsaPrivKey = new RsaPrivKey(bigintconversion.textToBigint(d), bigintconversion.textToBigint(n));
   // Encriptar el mensaje utilizando la instancia de RsaPubKey y el bigintcoversion para poder encriptar textos, convertir text to bigint, sino solo se puede encriptar números
   console.log('el mensaje a firmar es: ', mensaje)
   const mensajeFirmado = rsaPrivKey.sign(bigintconversion.textToBigint(mensaje));
@@ -238,27 +238,51 @@ export class AppComponent {
   recibirMensajeEncriptado() {// desencripta mal salen cosas raras
     this.dataService.recibirMensajeEncriptado().subscribe(
       response => {
+
         console.log('El mensaje recibido es:', response);
-        const messageEncryptedbyServer = response
-        console.log('El mensaje recibido es:', messageEncryptedbyServer);
+        const messageEncryptedbyServer = response;
+        // console.log('El messageEncryptedbyServer es:', messageEncryptedbyServer);
+        const jsonstring = JSON.stringify(response)
+        // console.log('jsonstring: ',jsonstring)
+        const jsonObject = JSON.parse(jsonstring);
+        const encryptedMessage = jsonObject.encryptedMessage;
+        console.log('encryptedMessage: ',encryptedMessage)
+
         // Recuperar la llave privada desde localStorage
-        const d = localStorage.getItem('privateKeyD');
-        console.log('d: ', d)
-        const n = localStorage.getItem('privateKeyN');
-        console.log('n: ', n)
+        const dString = localStorage.getItem('privateKeyD');
+        const nString = localStorage.getItem('privateKeyN');
+        // console.log('d:', dString);
+        // console.log('n:', nString);
+
+        if (dString === null || nString === null) {
+          console.error('Private key values are not found in localStorage.');
+          return;
+        }
+
+        const d = BigInt(dString);
+        const n = BigInt(nString);
+        // console.log('d:', d);
+        // console.log('n:', n);
 
         if (d === null || n === null ) {
          // La llave pública no está almacenada en localStorage
         console.error('No se encontró la llave pública en localStorage.');
         return;
         }
-        // Crear una instancia de RsaPubKey utilizando 'e' y 'n'
-        const rsaPrivKey = new RsaPrivKey(BigInt(d), BigInt(n));
-        console.log('rsaPrivKey:', rsaPrivKey)
-        const messagedecrypted = rsaPrivKey.decrypt(bigintconversion.textToBigint(messageEncryptedbyServer))
-        console.log('messagedecrypted:',messagedecrypted)
-        const messagedecryptedtoText = bigintconversion.bigintToText(messagedecrypted)
-        console.log('messagedecryptedtoText:',messagedecryptedtoText)
+        // Crear una instancia de RsaPrivKey utilizando 'd' y 'n'
+        const privKeyS = new RsaPrivKey(
+          d,
+          n
+        )
+        console.log('rsaPrivKey:', privKeyS )
+
+        const encryptedMessageBigInt =BigInt(encryptedMessage)
+        console.log('bigint: ',encryptedMessageBigInt)
+        const messagedecrypted = privKeyS.decrypt(encryptedMessageBigInt);
+        console.log('messagedecrypted:', messagedecrypted);
+
+        const messagedecryptedtoText = bigintconversion.bigintToText(messagedecrypted);
+        console.log('messagedecryptedtoText:', messagedecryptedtoText);
         },
         error => {
         console.error('Failed to get message:', error);
@@ -266,6 +290,7 @@ export class AppComponent {
         }
     );
   }
+
   verificar(){
     console.log('verificar onclcik')
   }
