@@ -20,10 +20,15 @@ export class AppComponent {
 
   constructor(private dataService: DataService) { }
 
+
+
+
+
+  // Funciones de prueba para enviar recibir y almacenar un mensaje
+  //
   almacenarMensaje() {
     console.log('Mensaje almacenado:', this.mensaje);
   }
-
   sendMessage() {
     const message = 'Que pasa cabesa!';
 
@@ -38,7 +43,6 @@ export class AppComponent {
       }
     );
   }
-
   getMessage() {
     this.dataService.getMessage().subscribe(
       response => {
@@ -52,6 +56,13 @@ export class AppComponent {
     );
   }
 
+
+
+
+
+
+  // Función que genera las llaves privada y pública del Cliente
+  //
   generateKeys() {
     generateKeys(1024).then((keys: RsaKeyPair) => {
       console.log('Claves generadas:', keys);
@@ -75,6 +86,11 @@ export class AppComponent {
       console.error('Error al generar las claves:', error);
     });
   }
+
+
+
+  // función que envia la llave Pública y/o privada al Servidor, para que el servidor pueda desencriptar o verificar las firmas del Cliente
+  //
   enviarLlavePublica() {
     console.log('hola on click enviar llave')
     // Recuperar la llave pública del localStorage
@@ -93,19 +109,6 @@ export class AppComponent {
       },
       error => {
         console.error('Error al enviar la llave pública:', error);
-      }
-    );
-  }
-  recibirLlavePublicaServidor() {
-    this.dataService.recibirLlavePublicaServidor().subscribe(
-      response => {
-        console.log('Llave publica Servidor Recibida:', response);
-        this.receivedMessage = response.message;
-        localStorage.setItem('publicKeyServer',this.receivedMessage)
-      },
-      error => {
-        console.error('Failed to get message:', error);
-        // Handle error...
       }
     );
   }
@@ -129,6 +132,35 @@ export class AppComponent {
       }
     );
   }
+
+
+
+
+
+
+
+  // Funciones que reciben la llave Privada y/o Pública del Servidor para poder desencriptar o verificar los mensajes que envia el Servidor
+  //
+  recibirLlavePublicaServidor() {
+    this.dataService.recibirLlavePublicaServidor().subscribe(
+      response => {
+        console.log('Llave publica Servidor Recibida:', response);
+        this.receivedMessage = response.message;
+        //localStorage.setItem('publicKeyServer',this.receivedMessage)
+        const { e, n } = response.publicKey;
+        console.log('e: ',e)
+        console.log('n: ',n)
+        // Guardar los valores de d y n en el localStorage
+        localStorage.setItem('publicKeye', e);
+        localStorage.setItem('publicKeyn', n);
+      },
+      error => {
+        console.error('Failed to get message:', error);
+        // Handle error...
+      }
+    );
+  }
+
   recibirLlavePrivadaServidor() {
     this.dataService.recibirLlavePrivadaServidor().subscribe(
       response => {
@@ -146,17 +178,27 @@ export class AppComponent {
     );
   }
 
-  desencriptar(){
-    console.log('dese onclcik')
-  }
 
+
+
+
+
+
+
+
+
+
+
+  // Funciones donde el Cliente envia el mensaje al Servidor
+  //                                             Firmado con la     llave privada del Cliente ---> Servidor verifica con la     llave pública del Cliente
+  //                                             Encriptado con la  llave pública al Servidor ---> Servidor desencripta con la  llave privada del Cliente
+  //
   enviarMensajeFirmado(){
     // Recuperar el mensaje almacenado
   const mensaje = this.mensaje;
 
   // Recuperar la llave pública desde localStorage
   const privateKeyJson = localStorage.getItem('privateKey');
-
   if (privateKeyJson === null) {
     // La llave pública no está almacenada en localStorage
     console.error('No se encontró la llave pública en localStorage.');
@@ -168,6 +210,7 @@ export class AppComponent {
   const n = privateKey.n;
   // Crear una instancia de RsaPubKey utilizando 'e' y 'n'
   const rsaPrivKey = new RsaPrivKey(bigintconversion.textToBigint(d), bigintconversion.textToBigint(n));
+  console.log('rsaPrivKey con la que se firma: ',rsaPrivKey)
   // Encriptar el mensaje utilizando la instancia de RsaPubKey y el bigintcoversion para poder encriptar textos, convertir text to bigint, sino solo se puede encriptar números
   console.log('el mensaje a firmar es: ', mensaje)
   const mensajeFirmado = rsaPrivKey.sign(bigintconversion.textToBigint(mensaje));
@@ -205,13 +248,25 @@ export class AppComponent {
   }
 
   const publicKey = JSON.parse(publicKeyJson);
+  console.log('publicKey recuperada: ',publicKey)
   // Obtener los valores de 'e' y 'n' del objeto publicKey
-  const e = publicKey.e;
-  const n = publicKey.n;
+  const eString = publicKey.e;
+  const nString = publicKey.n;
+  console.log('nString: ',eString)
+  console.log('nString: ',nString)
+  if (eString === null || nString === null) {
+    console.error('Private key values are not found in localStorage.');
+    return;
+  }
+
+  const d = BigInt(eString);
+  const n = BigInt(nString);
+  console.log('d: ',d)
+  console.log('n: ',n)
 
   // Crear una instancia de RsaPubKey utilizando 'e' y 'n'
-  const rsaPubKey = new RsaPubKey(BigInt(e), BigInt(n));
-
+  const rsaPubKey = new RsaPubKey(d,n);
+  console.log('rsaPubKey con la que se firma: ',rsaPubKey)
   // Encriptar el mensaje utilizando la instancia de RsaPubKey y el bigintcoversion para poder encriptar textos, convertir text to bigint, sino solo se puede encriptar números
   console.log('el mensaje a encriptar es: ', mensaje)
   const mensajeEncriptado = rsaPubKey.encrypt(bigintconversion.textToBigint(mensaje));
@@ -235,6 +290,22 @@ export class AppComponent {
       }
     )
   }
+
+
+
+
+
+
+
+
+
+
+
+  // Funciones que reciben mensajes del Servidor
+  //                                            Encriptado con la llave   pública del Servidor  ---> Desencriptar con la   Privada del Servidorç
+  //                                            Firmado con la    llave   privada del Servidor  ---> Verificar con la      Pública del Servidor
+  //
+  //
   recibirMensajeEncriptado() {// desencripta mal salen cosas raras
     this.dataService.recibirMensajeEncriptado().subscribe(
       response => {
@@ -291,8 +362,64 @@ export class AppComponent {
     );
   }
 
-  verificar(){
+  recibirMensajeFirmado(){// Firmado con la    llave   privada del Servidor  ---> Verificar con la      Pública del Servidor
     console.log('verificar onclcik')
+    this.dataService.recibirMensajeFirmado().subscribe(
+      response => {
+
+        console.log('El mensajeFirmado recibido es:', response);
+        const mensajeFirmado = response;
+        // console.log('El messageEncryptedbyServer es:', messageEncryptedbyServer);
+        const jsonstring = JSON.stringify(response)
+        // console.log('jsonstring: ',jsonstring)
+        const jsonObject = JSON.parse(jsonstring);
+        const encryptedSignMessage = jsonObject.mensajeFirmado;
+        console.log('encryptedSignMessage: ',encryptedSignMessage)
+
+        // Recuperar la llave privada desde localStorage
+        const eString = localStorage.getItem('publicKeye');
+        const nString = localStorage.getItem('publicKeyn');
+        // console.log('d:', dString);
+        // console.log('n:', nString);
+
+        if (eString === null || nString === null) {
+          console.error('publicKeyServer  values are not found in localStorage.');
+          return;
+        }
+
+        const e = BigInt(eString);
+        const n = BigInt(nString);
+        // console.log('d:', d);
+        // console.log('n:', n);
+
+        if (e === null || n === null ) {
+         // La llave pública no está almacenada en localStorage
+        console.error('No se encontró la llave pública en localStorage.');
+        return;
+        }
+        // Crear una instancia de RsaPrivKey utilizando 'd' y 'n'
+        const publicKeyS = new RsaPubKey(
+          e,
+          n
+        )
+        console.log('publicKeyS:', publicKeyS )
+
+        const encryptedSignMessageBigInt =BigInt(encryptedSignMessage)
+        console.log('Sign to bigint: ',encryptedSignMessageBigInt)
+        const messageVerified= publicKeyS.verify(encryptedSignMessageBigInt);
+        console.log('encryptedSignMessageBigInt:', messageVerified);
+
+        const messageVerifiedtoText = bigintconversion.bigintToText(messageVerified);
+        console.log('messageVerifiedtoText:', messageVerifiedtoText);
+        },
+        error => {
+        console.error('Failed to get message:', error);
+        // Handle error...
+        }
+    );
+  }
+  desencriptar(){
+    console.log('dese onclcik')
   }
 
 }

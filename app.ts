@@ -95,6 +95,19 @@ app.get('/encriptao', (req, res) => {
 });
 
 
+app.post('/firma', (req, res) => {
+})
+app.get('/firma', (req, res) => {
+
+  
+  const mensaje = 'Mensaje firmado por el Servidor'
+  console.log('mensaje: ', mensaje)
+  const mensajeFirmado = serverKeyPair.privKey.sign(bigintConversion.textToBigint(mensaje))
+  console.log('firmado: ', mensajeFirmado)
+  res.json({mensajeFirmado:mensajeFirmado.toString()})
+ 
+})
+
 
 
 
