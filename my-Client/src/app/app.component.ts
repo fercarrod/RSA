@@ -114,15 +114,16 @@ export class AppComponent {
   }
   enviarLlavePrivada() {
     // Recuperar la llave pública del localStorage
-    const llavePublicaJsonString = localStorage.getItem('privateKey');
+    const llavePrivateJsonString = localStorage.getItem('privateKey');
+    console.log('llavePrivateJsonString: ',llavePrivateJsonString)
 
-    if (llavePublicaJsonString === null) {
+    if (llavePrivateJsonString === null) {
       console.error('No se encontró la llave pública en localStorage.');
       return;
     }
 
     // Enviar la llave pública al servidor utilizando el servicio DataService
-    this.dataService.sendPrivateKey(llavePublicaJsonString).subscribe(
+    this.dataService.sendPrivateKey(llavePrivateJsonString).subscribe(
       response => {
         console.log('Llave pública enviada al servidor:', response);
         // Realizar acciones adicionales después de enviar la llave pública
@@ -211,10 +212,10 @@ export class AppComponent {
   }
   const privateKey = JSON.parse(privateKeyJson);
   // Obtener los valores de 'd' y 'n' del objeto privateKey
-  const d = privateKey.d;
-  const n = privateKey.n;
+  const d = BigInt(privateKey.d);
+  const n = BigInt(privateKey.n);
   // Crear una instancia de RsaPubKey utilizando 'e' y 'n'
-  const rsaPrivKey = new RsaPrivKey(bigintconversion.textToBigint(d), bigintconversion.textToBigint(n));
+  const rsaPrivKey = new RsaPrivKey(d, n);
   console.log('rsaPrivKey con la que se firma: ',rsaPrivKey)
   // Encriptar el mensaje utilizando la instancia de RsaPubKey y el bigintcoversion para poder encriptar textos, convertir text to bigint, sino solo se puede encriptar números
   console.log('el mensaje a firmar es: ', mensaje)
@@ -226,11 +227,12 @@ export class AppComponent {
     };
     // Convertir el objeto JSON a cadena
     const mensajeEncriptadoJsonString = JSON.stringify(mensajeFirmadoJson);
+    console.log('mensajeEncriptadoJsonString que se a firmado:',mensajeEncriptadoJsonString)
     if (mensajeEncriptadoJsonString === null) {
       console.error('No se encontró el mensaje encriptado en localStorage.');
       return;
     }
-    this.dataService.enviarMensajeEncriptado(mensajeEncriptadoJsonString).subscribe(
+    this.dataService.enviarMensajeFirmado(mensajeEncriptadoJsonString).subscribe(
       response => {
         console.log('Mensaje encriptado enviado al servidor:', response);
       },
@@ -282,6 +284,7 @@ export class AppComponent {
     };
     // Convertir el objeto JSON a cadena
     const mensajeEncriptadoJsonString = JSON.stringify(mensajeEncriptadoJson);
+    console.log('mensajeEncriptadoJsonString:',mensajeEncriptadoJsonString)
     if (mensajeEncriptadoJsonString === null) {
       console.error('No se encontró el mensaje encriptado en localStorage.');
       return;
