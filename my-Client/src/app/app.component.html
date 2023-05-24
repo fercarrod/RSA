@@ -351,50 +351,54 @@
   </div>
 
 
+<!-- Next Steps -->
+<h2>Prueba Comunicación Cliente Servidor</h2>
+<p>(Comprobación Comunicación C-S)</p>
 
-  <!-- Next Steps -->
-  <h2>Prueba Comunicación Cliente Servidor</h2>
-  <p>Enviar / Recibir mensajes</p>
+<p>Enviar / Recibir mensajes</p>
 
-  <div>
-    <button (click)="sendMessage()">Send Message</button>
-    <button (click)="getMessage()">Get Message</button>
-  </div>
-  <div *ngIf="receivedMessage">
-    Received Message: {{ receivedMessage }}
-  </div>
-  .
-  Prueba Recibir llaves
-  <button (click)="generateKeys()">Generar Claves</button>
-  .
-  <div>
-  <button (click)="recibirLlavePublicaServidor()">Obtener Llave Publica Servidor</button> .
-  <button (click)="recibirLlavePrivadaServidor()">Obtener Llave privada Servidor</button>
-  </div>
-  <div>
-  <button (click)="enviarLlavePublica()">Enviar llave pública</button> .
-  <button (click)="enviarLlavePrivada()">Enviar llave privada</button>
-  </div>
-.
-  <div>
-  Introduze el Texto que quieras encriptar o frimar
+<div class="button-group">
+  <button (click)="sendMessage()">Send Message</button>
+  <button (click)="getMessage()">Get Message</button>
+</div>
+
+<div *ngIf="receivedMessage">
+  Received Message: {{ receivedMessage }}
+</div>
+
+<!-- Prueba Recibir llaves -->
+<p>Generar Las llaves del cliente: privada y Pública</p>
+<button (click)="generateKeys()">Generar Claves</button>
+
+<p>Obtener Llaves Servidor</p>
+<div class="button-group">
+  <button (click)="recibirLlavePublicaServidor()">Llave Pública</button>
+  <button (click)="recibirLlavePrivadaServidor()">Llave Privada</button>
+</div>
+
+<p>Enviar Llaves del Cliente</p>
+<div class="button-group">
+  <button (click)="enviarLlavePublica()">Llave Pública</button>
+  <button (click)="enviarLlavePrivada()">Llave Privada</button>
+</div>
+
+<div>
+  Introduce el Texto que quieras encriptar o firmar:
   <input type="text" [(ngModel)]="mensaje">
-  </div>
+</div>
 
+<!-- Public Key functions -->
+<div class="button-group">
+  <p>El cliente envía:</p>
+  <button (click)="enviarMensajeEncriptado()">Enviar Encriptado</button>
+  <button (click)="enviarMensajeFirmado()">Firmar</button>
+</div>
 
-  Public Key functions
-  <div>
-  <button (click)="enviarMensajeEncriptado()">Enviar Encritado</button>
-  <button (click)="recibirMensajeEncriptado()">Recibir Encritado</button>
-   . <button (click)="recibirMensajeFirmado()">Verificar</button>
-  </div>
-
-    Private Key functions
-    <div>
-    <button (click)="enviarMensajeFirmado()">Firmar</button> .
-    <button (click)="desencriptar()">Desencriptar</button>
-
-    </div>
+<div class="button-group">
+  <p>El cliente recibe:</p>
+  <button (click)="recibirMensajeEncriptado()">Recibir Encriptado</button>
+  <button (click)="recibirMensajeFirmado()">Verificar</button>
+</div>
 
 
 

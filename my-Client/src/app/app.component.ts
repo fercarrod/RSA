@@ -426,9 +426,7 @@ export class AppComponent {
         }
     );
   }
-  desencriptar(){
-    console.log('dese onclcik')
-  }
+
 
 }
 /*ejemplo esqueleto funcion
