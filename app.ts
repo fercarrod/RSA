@@ -4,8 +4,8 @@ import cors from 'cors'
 import * as rsa from './rsa'
 import { RsaKeyPair, generatekeys } from './rsa'
 import * as bigintConversion from 'bigint-conversion'
-import bcu from 'bigint-crypto-utils'
 import { RsaPrivKey, RsaPubKey } from './my-Client/src/app/utils/rsa'
+import * as CryptoJS from 'crypto-js';
 const bodyParser = require('body-parser');
 
 const app = express()
@@ -14,7 +14,7 @@ app.use(express.json())
 app.use(cors())
 app.use(bodyParser.json())
 let serverKeyPair: RsaKeyPair;
-let publicKeyCli: any = {}
+let publicKeyCli: any = {} 
 let privKeyCli: any = {}
 
 
@@ -200,6 +200,52 @@ app.get('/messages', (req, res) => {
   const message = 'Hello from the server!'
   res.json({ message })
 })
+app.get('/blindsign', async (req, res) => {
+  try {
+    // Genera la llave pública y privada RSA
+    const publicKeyC = new rsa.RsaPubKey(
+      65537n,
+      98526359046374483657122842688277566342026786295198877740940697423192614469767n
+    )
+    const privKeyS = new rsa.RsaPrivKey(
+      90753936197147999678495119467831177004288137908663660476743391124837520490169n,
+      98526359046374483657122842688277566342026786295198877740940697423192614469767n
+    )
+    
+    const msg= 'hola #@#asda?'
+    const msgBI=bigintConversion.textToBigint(msg)
+
+    const hash = CryptoJS.SHA256(msg).toString()
+    const hashBI=bigintConversion.textToBigint(hash)
+    console.log('hash: ',hash,hashBI) 
+
+    //const hashBI =2839950229166728574298220096923046681440054267108352182960197021933625639595176497022030521220613643721933683123013230711048030436927019607805562081785136n
+    const blindMessage = publicKeyC.blindMessage(msgBI,hashBI)
+    console.log('bm: ',blindMessage)
+
+    // Aplica la firma ciega al mensaje cegado
+    const blindSignature = privKeyS.sign(blindMessage)
+    console.log('bs: ',blindSignature)
+    const bsToJson =blindSignature.toString()
+    console.log('3. blindSignature:',blindSignature)
+
+
+    const unblind = publicKeyC.unblindSign(hashBI,blindSignature)
+
+    console.log('4. unblind:',unblind)
+  
+    // Envía la firma ciega en la respuesta al cliente
+    res.json({ bsToJson });
+  } catch (error) {
+    console.error('Error en la firma ciega:', error);
+    res.status(500).json({ error: 'Error en la firma ciega' });
+  }
+});
+
+
+
+
+
 
 
 // para comprobar el funcionamiento del módulo rsa.ts

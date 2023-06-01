@@ -22,6 +22,17 @@ export class RsaPubKey {
   verify (s: bigint): bigint {
     return bcu.modPow(s, this.e, this.n)
   }
+   //blindMessage: Este método toma un mensaje m y un valor de cegado r, y realiza el cegado del mensaje aplicando la fórmula bm = m * r^e mod n.
+  blindMessage(m: bigint, r: bigint): bigint {
+    const bm = bcu.modPow(r, this.e, this.n);
+    return (m*bm) % this.n
+  }
+//unblindSign: Este método toma el mensaje cegado firmado bs y el mensaje cegado original bm, y realiza el descegado de la firma aplicando la fórmula ubs = bs * r^-1 mod n.
+  unblindSign(r: bigint,bs: bigint): bigint {
+    const bsInv = bcu.modInv(r,this.n);
+    return (bs*bsInv) % this.n
+  }
+ 
 }
 export class RsaPrivKey {
   // la clave privada puede desencryptar y firmar
@@ -39,6 +50,10 @@ export class RsaPrivKey {
 
   sign (m: bigint): bigint {
     return bcu.modPow(m, this.d, this.n)
+  }
+ //blindSign: Este método toma un mensaje cegado bs y realiza la firma ciega aplicando la fórmula bs = bm^d mod n.
+  blindSign(bm: bigint): bigint {
+    return bcu.modPow(bm, this.d, this.n);
   }
 }
 export class RsaKeyPair {
