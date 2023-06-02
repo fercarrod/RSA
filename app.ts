@@ -119,7 +119,7 @@ app.post('/encriptao', (req, res) => {
   const messagedecryptedtoText = bigintConversion.bigintToText(messagedecrypted)
   console.log('messagedecryptedtoText: ',messagedecryptedtoText)
 })
-app.get('/encriptao', (req, res) => {
+app.get('/getEncriptao', (req, res) => {
   const message = 'Mensaje a encriptar desde el servidor';
   console.log('publicKey con la que se encripta: ', serverKeyPair.publicKey)
   const encryptedMessage = serverKeyPair.publicKey.encrypt(bigintConversion.textToBigint(message))
@@ -128,7 +128,7 @@ app.get('/encriptao', (req, res) => {
 });
 
 
-app.post('/firma', (req, res) => {
+app.post('/firmao', (req, res) => {
   //obtener el mensaje, recuperar el segundo parametro del json {"mensajeEncriptado": "el numero de encriptado en string"}
   //transformar el numero en string en el segundo parametro a bigint para poder hacer el decrypt del bigint
   console.log('@@@@@@ post de firma')
@@ -157,7 +157,7 @@ app.post('/firma', (req, res) => {
   const messageVerifiedtoText = bigintConversion.bigintToText(messageVerified)
   console.log('messageVerifiedtoText: ',messageVerifiedtoText)
 })
-app.get('/firma', (req, res) => {
+app.get('/getFirmao', (req, res) => {
   const mensaje = 'Mensaje firmado por el Servidor'
   console.log('mensaje: ', mensaje)
   const mensajeFirmado = serverKeyPair.privKey.sign(bigintConversion.textToBigint(mensaje))
